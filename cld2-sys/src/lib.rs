@@ -92,7 +92,7 @@ Et puis encore comme ça.
     let chunks = unsafe { CLD2_ResultChunkVector_new() };
 
     let language = unsafe {
-        CLD2_ExtDetectLanguageSummary4(mixed.as_ptr() as *const i8,
+        CLD2_ExtDetectLanguageSummary4(mixed.as_ptr() as *const c_char,
                                        mixed.len() as c_int,
                                        true, &hints, 0,
                                        language3.as_mut_ptr(),

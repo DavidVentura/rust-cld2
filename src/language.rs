@@ -3,21 +3,25 @@
 
 #![allow(missing_docs)]
 
-use libc::c_char;
-use std::mem::transmute;
-use std::ffi::{CString, CStr};
-use std::str::from_utf8;
-use ffi::{CLD2_GetLanguageFromName, CLD2_LanguageName,
-          CLD2_LanguageCode, CLD2_LanguageDeclaredName};
 pub use ffi::Language as LanguageId;
+use ffi::{
+    CLD2_GetLanguageFromName, CLD2_LanguageCode, CLD2_LanguageDeclaredName, CLD2_LanguageName,
+};
+use libc::c_char;
+use std::ffi::{CStr, CString};
+use std::mem::transmute;
+use std::str::from_utf8;
 
-use types::Lang;
+use crate::types::Lang;
 
 unsafe fn from_static_c_str<'a>(raw: &'a *const c_char) -> &'static str {
-    let ptr: *const c_char = transmute(*raw);
-    from_utf8(CStr::from_ptr(ptr).to_bytes()).unwrap()
+    unsafe {
+        let ptr: *const c_char = transmute(*raw);
+        from_utf8(CStr::from_ptr(ptr).to_bytes()).unwrap()
+    }
 }
 
+#[allow(dead_code)]
 pub trait LanguageIdExt {
     fn from_name(name: &str) -> Self;
     fn name(&self) -> &'static str;
@@ -48,8 +52,12 @@ impl LanguageIdExt for LanguageId {
         unsafe { from_static_c_str(&CLD2_LanguageDeclaredName(*self)) }
     }
 
-    fn is_unknown(&self) -> bool { *self == LanguageId::UNKNOWN_LANGUAGE }
-    fn is_known(&self) -> bool { *self != LanguageId::UNKNOWN_LANGUAGE }
+    fn is_unknown(&self) -> bool {
+        *self == LanguageId::UNKNOWN_LANGUAGE
+    }
+    fn is_known(&self) -> bool {
+        *self != LanguageId::UNKNOWN_LANGUAGE
+    }
 
     fn to_lang(&self) -> Option<Lang> {
         if self.is_known() {
