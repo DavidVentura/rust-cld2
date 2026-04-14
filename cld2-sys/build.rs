@@ -67,6 +67,7 @@ fn main() {
     let mut config = cc::Build::new();
     config.cpp(true);
     config.flag("-std=c++03");
+    config.flag_if_supported("-Wno-c++11-narrowing");
     config.include(src.join("cld2/public"));
     config.include(src.join("cld2/internal"));
     for f in sources.iter() {
