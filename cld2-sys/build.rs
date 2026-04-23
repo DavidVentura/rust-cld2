@@ -38,7 +38,7 @@ fn get_excluded_sources(manifest: &Path) -> HashSet<String> {
 // Get all the *.cc files in path that aren't excluded.
 fn get_cc_files(dir: &Path, excluded: &HashSet<String>) -> Vec<PathBuf> {
     let cc_file = Regex::new(r"\.cc\z").unwrap();
-    read_dir(dir)
+    let mut files: Vec<PathBuf> = read_dir(dir)
         .unwrap()
         .map(|entry| entry.unwrap().path())
         .filter(|p| {
@@ -46,7 +46,9 @@ fn get_cc_files(dir: &Path, excluded: &HashSet<String>) -> Vec<PathBuf> {
             cc_file.is_match(filename) && !excluded.contains(filename)
         })
         .map(|p| p.to_owned())
-        .collect()
+        .collect();
+    files.sort();
+    files
 }
 
 fn main() {
