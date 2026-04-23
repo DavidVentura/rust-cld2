@@ -119,11 +119,6 @@ pub fn detect_language_ext(text: &str, format: Format, hints: &Hints) -> Detecti
     }
 }
 
-fn to_c_str_or_null(s: Option<&str>) -> *const c_char {
-    let opt_c_str = s.map(|v| CString::new(v.as_bytes()).unwrap());
-    opt_c_str.map(|v| v.as_ptr()).unwrap_or(null())
-}
-
 /// A value which can be converted to type `R` for use with the FFI.
 trait WithCRep<R> {
     /// Call the function `body` with a C-compatible represention of type
@@ -133,8 +128,10 @@ trait WithCRep<R> {
 
 impl<'a> WithCRep<*const CLDHints> for Hints<'a> {
     fn with_c_rep<T, F: FnOnce(*const CLDHints) -> T>(&self, body: F) -> T {
-        let clang_ptr = to_c_str_or_null(self.content_language);
-        let tld_ptr = to_c_str_or_null(self.tld);
+        let clang_owned = self.content_language.map(|v| CString::new(v).unwrap());
+        let tld_owned = self.tld.map(|v| CString::new(v).unwrap());
+        let clang_ptr = clang_owned.as_ref().map_or(null(), |c| c.as_ptr());
+        let tld_ptr = tld_owned.as_ref().map_or(null(), |c| c.as_ptr());
         let lang = self
             .language
             .map(|Lang(c)| LanguageIdExt::from_name(c))
